@@ -2,22 +2,54 @@
 import * as React from "react";
 import { nanoid } from "nanoid";
 import type { Node } from "../schema";
-import { registerWidget, type Field } from "./registry";
+import { registerWidget, type Widget } from "./registry";
 
 export function registerSectionWidget() {
-  registerWidget({
+  const widget: Widget = {
     type: "Section",
     title: "Section",
     category: "Layout",
     isContainer: true,
     acceptsChildTypes: ["Column"],
-    fields: [] as Field[],
+
+    fields: [
+      { kind: "text", label: "Max Width", path: "style.maxWidth", placeholder: "e.g. 1200px" },
+      { kind: "text", label: "Padding",   path: "style.padding",  placeholder: "e.g. 40px 20px" },
+      { kind: "color", label: "Background", path: "style.background" }
+    ],
+
+    render: (node: Node) => {
+      return (
+        <section
+          style={{
+            margin: "0 auto",
+            width: "100%",
+            ...(node.style ?? {}),
+          }}
+        />
+      );
+    },
+
     defaultNode: (): Node => ({
       id: nanoid(),
       type: "Section",
-      style: { padding: "24px", border: "1px solid #e5e7eb", borderRadius: "8px", margin: "8px 0" },
-      children: []
+      style: {
+        maxWidth: "1200px",
+        padding: "40px 20px",
+        background: "#ffffff",
+      },
+      props: {},
+      children: [
+        {
+          id: nanoid(),
+          type: "Column",
+          style: { display: "block" },
+          props: {},
+          children: [],
+        },
+      ],
     }),
-    render: (node) => <div style={node.style}>{node.children}</div>
-  });
+  };
+
+  registerWidget(widget);
 }

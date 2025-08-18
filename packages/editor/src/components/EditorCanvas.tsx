@@ -65,7 +65,7 @@ function RenderNode({ node }: { node: Node }) {
 }
 
 export function EditorCanvas() {
-  const page = useEditorStore((s) => s.doc.tree);
+  const page = useEditorStore((s) => s.page);
   const viewport = useEditorStore((s) => s.activeBreakpoint);
   const width =
     viewport === "desktop" ? 1024 : viewport === "tablet" ? 768 : 375;

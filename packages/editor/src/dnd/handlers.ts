@@ -3,13 +3,15 @@ import type { Node } from "../schema";
 type MoveNode = (srcParentId: string, srcIndex: number, dstParentId: string, dstIndex: number) => void;
 type AddChild = (parentId: string, node: Node, index?: number) => void;
 type CreateFromWidget = (widgetType: string) => Node;
+type pageType = (id: string) => Node | undefined;
 
 export function makeOnDragEnd(opts: {
   moveNode: MoveNode;
   addChild: AddChild;
   createFromWidget: CreateFromWidget;
+  getPage: pageType;
 }) {
-  const { moveNode, addChild, createFromWidget } = opts;
+  const { moveNode, addChild, createFromWidget, getPage } = opts;
 
   return (event: any) => {
     const { active, over } = event;

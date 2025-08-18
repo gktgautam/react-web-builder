@@ -1,30 +1,34 @@
+// packages/editor/src/components/EditorLayout.tsx
 "use client";
-import * as React from "react";
+import React from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { useEditorStore } from "../store/createEditorStore";
+import { makeOnDragEnd } from "../dnd/handlers";
+import { createFromWidget } from "../lib/createFromWidget";
 import { Sidebar } from "./Sidebar";
 import { EditorCanvas } from "./EditorCanvas";
 import { LayersPanel } from "./LayersPanel";
 import { PropertyPanel } from "./PropertyPanel";
 import { registerDefaultWidgets } from "../widgets";
-import { makeOnDragEnd } from "../dnd/handlers";
-import { createFromWidget } from "../lib/createFromWidget";
 
 export default function EditorLayout() {
-  React.useEffect(() => {
-    if (!(globalThis as any).__widgets_registered__) {
-      registerDefaultWidgets();
-      (globalThis as any).__widgets_registered__ = true;
-    }
-  }, []);
+React.useEffect(() => {
+  if (!(window as any).__widgets_registered__) {
+    registerDefaultWidgets();
+    (window as any).__widgets_registered__ = true;
+  }
+}, []);
+  
 
   const moveNode = useEditorStore((s) => s.moveNode);
   const addChild = useEditorStore((s) => s.addChild);
-  const onDragEnd = makeOnDragEnd({ moveNode, addChild, createFromWidget });
+  const getPage  = () => useEditorStore.getState().page;
+
+  const onDragEnd = makeOnDragEnd({ moveNode, addChild, createFromWidget, getPage });
 
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-      <div style={{ display: "flex", height: "100vh" }}>
+      <div className="flex h-screen">
         <Sidebar />
         <EditorCanvas />
         <LayersPanel />

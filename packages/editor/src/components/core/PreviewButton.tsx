@@ -3,11 +3,11 @@ import * as React from "react";
 import { useEditorStore } from "../../store/createEditorStore";
 
 export function PreviewButton() {
-  const doc = useEditorStore((s) => s.doc);
+  const page = useEditorStore((s) => s.page);
 
   const openPreview = () => {
     // save to localStorage for the preview tab to read
-    localStorage.setItem("rpb-doc", JSON.stringify(doc));
+    localStorage.setItem("rpb-doc", JSON.stringify(page));
     window.open("/preview", "_blank", "noopener,noreferrer");
   };
 

@@ -2,22 +2,42 @@
 import * as React from "react";
 import { nanoid } from "nanoid";
 import type { Node } from "../schema";
-import { registerWidget, type Field } from "./registry";
+import { registerWidget, type Widget } from "./registry";
 
 export function registerTextWidget() {
-  registerWidget({
+  const widget: Widget = {
     type: "Text",
     title: "Text",
     category: "Basic",
+    isContainer: false,
+
     fields: [
-      { kind: "textarea", label: "Text", path: "props.text", rows: 4, placeholder: "Type something…" }
-    ] as Field[],
+      { kind: "textarea", label: "Text", path: "props.text", placeholder: "Type your copy...", rows: 5 },
+      { kind: "color",    label: "Color", path: "style.color" },
+      { kind: "text",     label: "Size",  path: "style.fontSize", placeholder: "e.g. 16px" },
+      { kind: "text",     label: "Line Height", path: "style.lineHeight", placeholder: "e.g. 1.6" },
+      { kind: "text",     label: "Margin", path: "style.margin", placeholder: "e.g. 0 0 16px" },
+    ],
+
+    render: (node: Node) => {
+      return <p style={node.style}>{node.props?.text ?? "Your text goes here."}</p>;
+    },
+
     defaultNode: (): Node => ({
       id: nanoid(),
       type: "Text",
-      props: { text: "Lorem ipsum dolor sit amet." },
-      style: { margin: "6px 0", color: "#111827" }
+      props: {
+        text:
+          "This is a paragraph. Replace it with your copy.",
+      },
+      style: {
+        fontSize: "16px",
+        lineHeight: "1.6",
+        margin: "0 0 16px",
+      },
+      children: [],
     }),
-    render: (node) => <p style={node.style}>{node.props?.text ?? ""}</p>
-  });
+  };
+
+  registerWidget(widget);
 }

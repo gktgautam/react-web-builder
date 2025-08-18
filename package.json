@@ -7,9 +7,9 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "pnpm -w --parallel dev",
-    "build": "pnpm -w --parallel build",
-    "typecheck": "pnpm -w --parallel typecheck"
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm -r --parallel build",
+    "typecheck": "pnpm -r --parallel typecheck"
   },
   "overrides": {
     "react": "18.3.1",

@@ -1,12 +1,13 @@
 export * from "./registry";
-export { registerSectionWidget } from "./section";
-export { registerColumnWidget } from "./column";
-export { registerHeadingWidget } from "./heading";
-export { registerTextWidget } from "./text";
-export { registerButtonWidget } from "./button";
-export { registerImageWidget } from "./image";
-export { registerDividerWidget } from "./divider";
-export { registerSpacerWidget } from "./spacer";
+import { registerSectionWidget } from "./section";
+import { registerColumnWidget } from "./column";
+import { registerHeadingWidget } from "./heading";
+import { registerTextWidget } from "./text";
+import { registerButtonWidget } from "./button";
+import { registerImageWidget } from "./image";
+import { registerDividerWidget } from "./divider";
+import { registerSpacerWidget } from "./spacer";
+
 
 export function registerDefaultWidgets() {
   registerSectionWidget();
