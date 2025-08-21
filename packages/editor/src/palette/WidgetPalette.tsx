@@ -53,7 +53,10 @@ function DraggableWidget({
   );
 }
 
-export function WidgetPalette({ parentId }: { parentId: string }) {
+export function WidgetPalette() {
+
+  const parentId: string = useEditorStore((s) => s.page.id);
+
   // Make sure registry is ready before we read it
   ensureWidgetsRegisteredOnce();
 
@@ -62,6 +65,7 @@ export function WidgetPalette({ parentId }: { parentId: string }) {
 
   // Use the action that actually exists in your store
   const insertNode = useEditorStore((s) => s.insertNode);
+  debugger;
 
   const clickAdd = (def: () => Node) => {
     const node = def();
@@ -69,17 +73,7 @@ export function WidgetPalette({ parentId }: { parentId: string }) {
   };
 
   return (
-    <aside
-      style={{
-        width: 260,
-        borderRight: "1px solid #e5e7eb",
-        background: "#fff",
-        padding: 12,
-        overflow: "auto",
-      }}
-    >
-      <div style={{ fontWeight: 700, marginBottom: 8 }}>Widgets</div>
-
+      <>
       {Object.entries(groups).map(([cat, items]) => (
         <div key={cat} style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 6 }}>{cat}</div>
@@ -99,7 +93,7 @@ export function WidgetPalette({ parentId }: { parentId: string }) {
             </div>
           )}
         </div>
-      ))}
-    </aside>
+      ))} 
+      </>
   );
 }

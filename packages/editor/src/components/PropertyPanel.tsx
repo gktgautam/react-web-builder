@@ -106,22 +106,15 @@ export function PropertyPanel() {
   const selectedId = useEditorStore((s) => s.selectedId);
   const node = getNode(root, selectedId);
 
-  if (!selectedId) {
-    return <aside style={{ width: 320, borderLeft: "1px solid #e5e7eb", padding: 12, color: "#6b7280" }}>
-      Select an element to edit its properties.
-    </aside>;
+  if (!selectedId || !node) {
+    return  <>{!selectedId?'Select an element to edit its properties.':'The selected element no longer exists.'}</>;
   }
 
-  if (!node) {
-    return <aside style={{ width: 320, borderLeft: "1px solid #e5e7eb", padding: 12, color: "#b91c1c" }}>
-      The selected element no longer exists.
-    </aside>;
-  }
-
+ 
   const widget = getWidget(node.type);
 
   return (
-    <aside style={{ width: 320, borderLeft: "1px solid #e5e7eb", padding: 12 }}>
+    <>
       <div style={{ fontWeight: 600, marginBottom: 8 }}>{widget?.title ?? node.type}</div>
       <Tabs
         tabs={[
@@ -136,7 +129,7 @@ export function PropertyPanel() {
           { id: "advanced", label: "Advanced", content: <AdvancedControls node={node} /> }
         ]}
       />
-    </aside>
+    </>
   );
 }
 

@@ -29,10 +29,7 @@ function Row({ node, depth }: { node: Node; depth: number }) {
 
 export function LayersPanel() {
   const root = useEditorStore((s) => s.page);
-  return (
-    <aside style={{ width: 280, borderLeft: "1px solid #e5e7eb", background: "#fff", overflow: "auto" }}>
-      <div style={{ padding: 12, fontWeight: 700 }}>Layers</div>
-      <Row node={root} depth={0} />
-    </aside>
+  return ( 
+      <Row node={root} depth={0} /> 
   );
 }

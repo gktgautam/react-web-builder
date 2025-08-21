@@ -67,17 +67,16 @@ function RenderNode({ node }: { node: Node }) {
 export function EditorCanvas() {
   const page = useEditorStore((s) => s.page);
   const viewport = useEditorStore((s) => s.activeBreakpoint);
-  const width =
-    viewport === "desktop" ? 1024 : viewport === "tablet" ? 768 : 375;
+  const width = viewport === "desktop" ? 1024 : viewport === "tablet" ? 768 : 375;
 
   return (
-    <main style={{ flex: 1, overflow: "auto", background: "#f9fafb", padding: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+    <main className="flex-1 col-span-2 overflow-auto bg-gray-100 p-4">
+      <div className="flex justify-between mb-3">
         <BreakpointSwitcher />
         <PreviewButton />
       </div>
-      <div style={{ width, margin: "0 auto" }}>
-        <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, padding: 16, minHeight: "70vh" }}>
+      <div className="mx-auto" style={{ width }}>
+        <div className="bg-white border border-gray-300 rounded-lg p-4 min-h-[70vh]">
           <RenderNode node={page} />
         </div>
       </div>
