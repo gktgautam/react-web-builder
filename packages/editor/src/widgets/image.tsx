@@ -1,3 +1,4 @@
+// packages/editor/src/widgets/image.tsx
 "use client";
 import * as React from "react";
 import { nanoid } from "nanoid";
@@ -10,38 +11,26 @@ export function registerImageWidget() {
     title: "Image",
     category: "Media",
     isContainer: false,
-
     fields: [
-      { kind: "url",   label: "Src", path: "props.src", placeholder: "https://..." },
-      { kind: "text",  label: "Alt", path: "props.alt", placeholder: "Describe the image" },
-      { kind: "text",  label: "Width", path: "style.width", placeholder: "e.g. 100% or 400px" },
-      { kind: "text",  label: "Height", path: "style.height", placeholder: "e.g. auto or 300px" },
-      { kind: "text",  label: "Border Radius", path: "style.borderRadius", placeholder: "e.g. 8px" },
-      { kind: "text",  label: "Object Fit", path: "style.objectFit", placeholder: "cover|contain" },
+      { kind: "url",   label: "Image URL", path: "props.src", placeholder: "https://..." },
+      { kind: "text",  label: "Alt text",  path: "props.alt", placeholder: "Describe the image" },
+      { kind: "text",  label: "Width",     path: "style.width", placeholder: "e.g. 100% or 320px" },
     ],
-
-    render: (node: Node) => {
-      const { src, alt } = node.props ?? {};
-      return (
-        <img
-          src={src || "https://via.placeholder.com/800x400?text=Image"}
-          alt={alt || ""}
-          style={{ display: "block", maxWidth: "100%", height: "auto", ...(node.style ?? {}) }}
-        />
-      );
+    render(node) {
+      const src = (node as any).props?.src ?? "https://picsum.photos/seed/rwb/800/400";
+      const alt = (node as any).props?.alt ?? "";
+      const style = (node as any).style ?? {};
+      return <img src={src} alt={alt} style={style} />;
     },
-
-    defaultNode: (): Node => ({
-      id: nanoid(),
-      type: "Image",
-      props: {
-        src: "https://via.placeholder.com/800x400?text=Image",
-        alt: "Placeholder image",
-      },
-      style: { width: "100%", height: "auto", borderRadius: "0px" },
-      children: [],
-    }),
+    defaultNode(): Node {
+      return {
+        id: nanoid(),
+        type: "Image",
+        props: { src: "https://picsum.photos/seed/rwb/800/400", alt: "" },
+        style: { width: "100%", display: "block", borderRadius: "8px" },
+        children: [],
+      };
+    },
   };
-
   registerWidget(widget);
 }

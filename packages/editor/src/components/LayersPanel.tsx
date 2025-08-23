@@ -1,3 +1,4 @@
+// packages/editor/src/components/LayersPanel.tsx
 "use client";
 import * as React from "react";
 import { useEditorStore } from "../store/createEditorStore";
@@ -14,13 +15,17 @@ function Row({ node, depth }: { node: Node; depth: number }) {
       <div
         onClick={() => select(node.id)}
         style={{
-          padding: "6px 8px",
-          paddingLeft: 8 + depth * 12,
+          padding: "6px 10px",
+          background: isSelected ? "#111827" : "transparent",
+          color: isSelected ? "#fff" : "#111827",
+          borderBottom: "1px solid #e5e7eb",
           cursor: "pointer",
-          background: isSelected ? "#eff6ff" : "transparent"
+          paddingLeft: 10 + depth * 12,
+          fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+          fontSize: 12,
         }}
       >
-        {node.type} <span style={{ color: "#9ca3af" }}>({node.id.slice(0,6)})</span>
+        {node.type} <span style={{ color: isSelected ? "#e5e7eb" : "#9ca3af" }}>({node.id.slice(0,6)})</span>
       </div>
       {kids.map((k) => <Row key={k.id} node={k} depth={depth + 1} />)}
     </>
@@ -29,7 +34,5 @@ function Row({ node, depth }: { node: Node; depth: number }) {
 
 export function LayersPanel() {
   const root = useEditorStore((s) => s.page);
-  return ( 
-      <Row node={root} depth={0} /> 
-  );
+  return <div style={{ minWidth: 240 }}><Row node={root} depth={0} /></div>;
 }

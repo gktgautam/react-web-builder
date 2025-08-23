@@ -1,3 +1,4 @@
+// packages/editor/src/widgets/spacer.tsx
 "use client";
 import * as React from "react";
 import { nanoid } from "nanoid";
@@ -10,24 +11,14 @@ export function registerSpacerWidget() {
     title: "Spacer",
     category: "Basic",
     isContainer: false,
-
-    fields: [
-      { kind: "number", label: "Height (px)", path: "props.size", min: 0, step: 1 },
-    ],
-
-    render: (node: Node) => {
-      const size = Number(node.props?.size ?? 24);
-      return <div style={{ height: `${size}px` }} />;
+    fields: [{ kind: "text", label: "Height", path: "style.height", placeholder: "e.g. 24px" }],
+    render(node) {
+      const h = (node as any).style?.height ?? "24px";
+      return <div style={{ height: h }} />;
     },
-
-    defaultNode: (): Node => ({
-      id: nanoid(),
-      type: "Spacer",
-      props: { size: 24 },
-      style: {},
-      children: [],
-    }),
+    defaultNode(): Node {
+      return { id: nanoid(), type: "Spacer", style: { height: "24px" }, children: [] };
+    },
   };
-
   registerWidget(widget);
 }

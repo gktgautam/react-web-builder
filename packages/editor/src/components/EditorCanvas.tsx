@@ -1,3 +1,4 @@
+// packages/editor/src/components/EditorCanvas.tsx
 "use client";
 import * as React from "react";
 import { useEditorStore } from "../store/createEditorStore";
@@ -11,15 +12,31 @@ function RenderNode({ node }: { node: Node }) {
   const hoveredId  = useEditorStore((s) => s.hoveredId);
   const selectedId = useEditorStore((s) => s.selectedId);
   const selectNode = useEditorStore((s) => s.selectNode);
+  const setHover   = useEditorStore((s) => s.hoverNode);
+
+  const isSelected = selectedId === node.id;
+  const isHovered  = hoveredId === node.id;
+
+  const common: React.HTMLAttributes<HTMLDivElement> = {
+    onClick: (e) => { e.stopPropagation(); selectNode(node.id); },
+    onMouseEnter: () => setHover(node.id),
+    onMouseLeave: () => setHover(null),
+    style: {
+      outline: isSelected ? "2px solid #3b82f6" : isHovered ? "1px dashed #60a5fa" : undefined,
+      outlineOffset: 2,
+      cursor: "default",
+      ...(node.style || {}),
+    },
+  };
 
   if (node.type === "Page") {
     const kids = node.children ?? [];
     return (
-      <div onClick={() => selectNode(node.id)}>
-        {kids.map((c, i) => (
-          <React.Fragment key={c.id}>
+      <div {...common}>
+        {kids.map((k, i) => (
+          <React.Fragment key={k.id}>
             <DropSlot parentId={node.id} index={i} />
-            <RenderNode node={c} />
+            <RenderNode node={k} />
           </React.Fragment>
         ))}
         <DropSlot parentId={node.id} index={kids.length} />
@@ -28,49 +45,35 @@ function RenderNode({ node }: { node: Node }) {
   }
 
   const meta = getWidget(node.type);
-  if (!meta) return null;
+  if (!meta) return <div {...common}>Unknown widget: {node.type}</div>;
 
-  const border =
-    node.id === selectedId
-      ? "2px solid #3b82f6"
-      : node.id === hoveredId
-      ? "1px solid #f59e0b"
-      : "1px solid transparent";
+  if (meta.isContainer) {
+    const kids = node.children ?? [];
+    return (
+      <div {...common}>
+        {kids.map((k, i) => (
+          <React.Fragment key={k.id}>
+            <DropSlot parentId={node.id} index={i} />
+            <RenderNode node={k} />
+          </React.Fragment>
+        ))}
+        <DropSlot parentId={node.id} index={kids.length} />
+      </div>
+    );
+  }
 
-  const kids = node.children ?? [];
-  return (
-    <div
-      style={{ position: "relative", border, borderRadius: 8, padding: 4 }}
-      onMouseEnter={() => useEditorStore.getState().hoverNode(node.id)}
-      onMouseLeave={() => useEditorStore.getState().hoverNode(null)}
-      onClick={(e) => { e.stopPropagation(); selectNode(node.id); }}
-    >
-      {meta.render({
-        ...node,
-        children: meta.isContainer ? kids.map(k => <RenderNode key={k.id} node={k} />) as any : undefined
-      })}
-      {meta.isContainer && (
-        <>
-          {kids.map((child, i) => (
-            <React.Fragment key={child.id}>
-              <DropSlot parentId={node.id} index={i} />
-              <RenderNode node={child} />
-            </React.Fragment>
-          ))}
-          <DropSlot parentId={node.id} index={kids.length} />
-        </>
-      )}
-    </div>
-  );
+  // leaf widget
+  return <div {...common}>{meta.render(node)}</div>;
 }
 
 export function EditorCanvas() {
   const page = useEditorStore((s) => s.page);
-  const viewport = useEditorStore((s) => s.activeBreakpoint);
-  const width = viewport === "desktop" ? 1024 : viewport === "tablet" ? 768 : 375;
+  const bp = useEditorStore((s) => s.activeBreakpoint);
+
+  const width = bp === "mobile" ? 420 : bp === "tablet" ? 768 : 1024;
 
   return (
-    <main className="flex-1 col-span-2 overflow-auto bg-gray-100 p-4">
+    <main className="flex-1 col-span-3 overflow-auto bg-gray-100 p-4">
       <div className="flex justify-between mb-3">
         <BreakpointSwitcher />
         <PreviewButton />

@@ -1,3 +1,4 @@
+// packages/editor/src/components/FieldControl.tsx
 "use client";
 import * as React from "react";
 import { useEditorStore } from "../store/createEditorStore";
@@ -10,42 +11,38 @@ function getByPath(obj: any, path: string) {
 
 export function FieldControl({ nodeId, field }: { nodeId: string; field: Field }) {
   const updateByPath = useEditorStore((s) => s.updateByPath);
-  const page = useEditorStore((s) => s.page); // if your store exposes doc.tree, change to s.doc.tree
+  const page = useEditorStore((s) => s.page);
 
-  // find the node so we can show the current value
   const node = React.useMemo(() => {
-    if (!page) return null;
-    const stack = [page];
+    // simple DFS to find node by id
+    const stack: any[] = [page];
     while (stack.length) {
       const cur = stack.pop();
       if (!cur) continue;
       if (cur.id === nodeId) return cur;
-      (cur.children ?? []).forEach((c) => c && stack.push(c));
+      const kids = Array.isArray(cur.children) ? cur.children : [];
+      for (let i = kids.length - 1; i >= 0; i--) stack.push(kids[i]);
     }
     return null;
   }, [page, nodeId]);
 
   const value = node ? getByPath(node, field.path) : undefined;
-
-  const label = (
-    <div style={{ fontSize: 12, marginBottom: 4 }}>
-      {field.label}
-    </div>
-  );
-  const wrap: React.CSSProperties = { display: "block", marginBottom: 12 };
+  const wrap: React.CSSProperties = { display: "block", marginBottom: 10 };
+  const label = <div style={{ fontSize: 12, marginBottom: 4 }}>{field.label}</div>;
   const inputStyle: React.CSSProperties = { width: "100%", padding: 8 };
 
   const onChange = (v: any) => updateByPath(nodeId, field.path, v);
 
   switch (field.kind) {
     case "text":
+    case "url":
       return (
         <label style={wrap}>
           {label}
           <input
-            type="text"
+            type={field.kind === "url" ? "url" : "text"}
             value={value ?? ""}
-            placeholder={field.placeholder}
+            placeholder={(field as any).placeholder}
             onChange={(e) => onChange(e.target.value)}
             style={inputStyle}
           />
@@ -58,55 +55,59 @@ export function FieldControl({ nodeId, field }: { nodeId: string; field: Field }
           {label}
           <textarea
             value={value ?? ""}
-            placeholder={field.placeholder}
-            rows={field.rows ?? 4}
+            placeholder={(field as any).placeholder}
+            rows={(field as any).rows ?? 4}
             onChange={(e) => onChange(e.target.value)}
-            style={{ ...inputStyle, minHeight: 80 }}
+            style={{ ...inputStyle, resize: "vertical" }}
           />
         </label>
       );
 
-    case "number":
+    case "number": {
+      const f = field as any;
       return (
         <label style={wrap}>
           {label}
           <input
             type="number"
-            value={value ?? ""}
-            min={field.min}
-            max={field.max}
-            step={field.step}
+            value={value ?? 0}
+            min={f.min}
+            max={f.max}
+            step={f.step}
             onChange={(e) => onChange(e.target.value === "" ? "" : Number(e.target.value))}
             style={inputStyle}
           />
         </label>
       );
+    }
 
-    case "select":
+    case "select": {
+      const f = field as any;
       return (
         <label style={wrap}>
           {label}
           <select
-            value={value ?? (field.options[0]?.value ?? "")}
+            value={value ?? (f.options?.[0]?.value ?? "")}
             onChange={(e) => onChange(e.target.value)}
             style={inputStyle}
           >
-            {field.options.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            {f.options?.map((o: any) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
         </label>
       );
+    }
 
     case "switch":
       return (
-        <label style={{ ...wrap, display: "flex", alignItems: "center", gap: 8 }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
           <input
             type="checkbox"
             checked={Boolean(value)}
             onChange={(e) => onChange(e.target.checked)}
           />
-          <span style={{ fontSize: 13 }}>{field.label}</span>
+          <span style={{ fontSize: 12 }}>{field.label}</span>
         </label>
       );
 
@@ -118,33 +119,12 @@ export function FieldControl({ nodeId, field }: { nodeId: string; field: Field }
             type="color"
             value={value ?? "#000000"}
             onChange={(e) => onChange(e.target.value)}
-            style={{ width: "100%", height: 32 }}
-          />
-        </label>
-      );
-
-    case "url":
-      return (
-        <label style={wrap}>
-          {label}
-          <input
-            type="url"
-            value={value ?? ""}
-            placeholder={field.placeholder}
-            onChange={(e) => onChange(e.target.value)}
-            style={inputStyle}
+            style={{ width: 40, height: 28, padding: 0, border: "none", background: "transparent" }}
           />
         </label>
       );
 
     default:
-      return (
-        <div style={wrap}>
-          {label}
-          <div style={{ fontSize: 12, color: "#6b7280" }}>
-            Unsupported field kind: {(field as any).kind}
-          </div>
-        </div>
-      );
+      return null;
   }
 }

@@ -18,6 +18,7 @@ import { Layers, Plus } from "lucide-react";
 type PanelKey = "WidgetPalette" | "PropertyPanel" | "LayersPanel";
 
 export default function EditorLayout() {
+  // Ensure widgets registered once
   React.useEffect(() => {
     if (!(window as any).__widgets_registered__) {
       registerDefaultWidgets();
@@ -25,60 +26,53 @@ export default function EditorLayout() {
     }
   }, []);
 
+  // DnD handlers
   const moveNode = useEditorStore((s) => s.moveNode);
   const addChild = useEditorStore((s) => s.addChild);
   const getPage = () => useEditorStore.getState().page;
   const onDragEnd = makeOnDragEnd({ moveNode, addChild, createFromWidget, getPage });
 
-  // 👇 read selection from store
+  // selection-driven toggling
   const selectedId = useEditorStore((s) => s.selectedId);
 
-  // Panels state
   const [panels, setPanels] = React.useState<Record<PanelKey, boolean>>({
     WidgetPalette: true,
     PropertyPanel: false,
     LayersPanel: true,
   });
 
-  // 🔁 Auto-switch based on selection:
-  // - when something is selected => show PropertyPanel, hide WidgetPalette
-  // - when selection is cleared    => show WidgetPalette, hide PropertyPanel
+  const lastSelected = React.useRef<string | null>(null);
   React.useEffect(() => {
-    setPanels((prev) => ({
-      ...prev,
-      PropertyPanel: Boolean(selectedId),
-      WidgetPalette: !selectedId,
-    }));
+    if (lastSelected.current !== selectedId) {
+      setPanels((p) => ({ ...p, PropertyPanel: !!selectedId, WidgetPalette: !selectedId }));
+      lastSelected.current = selectedId ?? null;
+    }
   }, [selectedId]);
 
-  // Mutually-exclusive logic for Palette vs Properties.
-  // Layers stays independent.
   const ShowPanel = (key: PanelKey, action: "" | "show" | "hide" = "") => {
     setPanels((prev) => {
       const next = { ...prev };
-
-      const resolve = (current: boolean) =>
-        action === "show" ? true : action === "hide" ? false : !current;
-
+      const resolve = (cur: boolean) => (action === "show" ? true : action === "hide" ? false : !cur);
       if (key === "WidgetPalette") {
         const val = resolve(prev.WidgetPalette);
         next.WidgetPalette = val;
-        if (val) next.PropertyPanel = false; // exclusivity
-        return next;
-      }
-
-      if (key === "PropertyPanel") {
+        if (val) next.PropertyPanel = false;
+      } else if (key === "PropertyPanel") {
         const val = resolve(prev.PropertyPanel);
         next.PropertyPanel = val;
-        if (val) next.WidgetPalette = false; // exclusivity
-        return next;
+        if (val) next.WidgetPalette = false;
+      } else {
+        next.LayersPanel = resolve(prev.LayersPanel);
       }
-
-      // LayersPanel is independent
-      next.LayersPanel = resolve(prev.LayersPanel);
       return next;
     });
   };
+
+  // autosave
+  const page = useEditorStore((s) => s.page);
+  React.useEffect(() => {
+    try { localStorage.setItem("rpb-doc", JSON.stringify({ tree: page })); } catch {}
+  }, [page]);
 
   return (
     <>
@@ -86,9 +80,9 @@ export default function EditorLayout() {
         <div className="font-bold text-xl">Builder</div>
 
         <div className="flex items-center gap-4">
-          {/* Clicking this always prefers WidgetPalette and hides PropertyPanel */}
           <button
             title="Toggle Widget Palette"
+            aria-label="Toggle Widget Palette"
             onClick={() => ShowPanel("WidgetPalette")}
             className={`p-2 rounded ${panels.WidgetPalette ? "bg-white/10" : "bg-transparent"}`}
           >
@@ -97,6 +91,7 @@ export default function EditorLayout() {
 
           <button
             title="Toggle Layers Panel"
+            aria-label="Toggle Layers Panel"
             onClick={() => ShowPanel("LayersPanel")}
             className={`p-2 rounded ${panels.LayersPanel ? "bg-white/10" : "bg-transparent"}`}
           >
@@ -105,6 +100,7 @@ export default function EditorLayout() {
 
           <button
             title="Toggle Property Panel"
+            aria-label="Toggle Property Panel"
             onClick={() => ShowPanel("PropertyPanel")}
             className={`p-2 rounded ${panels.PropertyPanel ? "bg-white/10" : "bg-transparent"}`}
           >
@@ -139,6 +135,7 @@ export default function EditorLayout() {
 
       {panels.LayersPanel && (
         <DraggableResizable
+          handle=".layers-header"
           defaultPosition={{ x: 150, y: 100 }}
           defaultSize={{ width: 400, height: 300 }}
           minWidth={200}
@@ -155,7 +152,7 @@ export default function EditorLayout() {
           }}
         >
           <aside className="border-gray-300 bg-gray-50 w-full h-full">
-            <div className="px-3 py-2 font-semibold border-b">Layers</div>
+            <div className="layers-header px-3 py-2 font-semibold border-b cursor-move select-none">Layers</div>
             <div className="h-[calc(100%-40px)] overflow-auto">
               <LayersPanel />
             </div>

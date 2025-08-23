@@ -1,3 +1,4 @@
+// packages/editor/src/widgets/section.tsx
 "use client";
 import * as React from "react";
 import { nanoid } from "nanoid";
@@ -10,46 +11,23 @@ export function registerSectionWidget() {
     title: "Section",
     category: "Layout",
     isContainer: true,
-    acceptsChildTypes: ["Column"],
-
     fields: [
-      { kind: "text", label: "Max Width", path: "style.maxWidth", placeholder: "e.g. 1200px" },
-      { kind: "text", label: "Padding",   path: "style.padding",  placeholder: "e.g. 40px 20px" },
-      { kind: "color", label: "Background", path: "style.background" }
+      { kind: "text", label: "Padding", path: "style.padding", placeholder: "e.g. 32px 0" },
+      { kind: "color", label: "Background", path: "style.background" },
     ],
-
-    render: (node: Node) => {
-      return (
-        <section
-          style={{
-            margin: "0 auto",
-            width: "100%",
-            ...(node.style ?? {}),
-          }}
-        />
-      );
+    render(node) {
+      const style = { padding: "32px 0", ...(node as any).style };
+      return <section style={style}>{(node.children ?? []).map(() => null)}</section>;
     },
-
-    defaultNode: (): Node => ({
-      id: nanoid(),
-      type: "Section",
-      style: {
-        maxWidth: "1200px",
-        padding: "40px 20px",
-        background: "#ffffff",
-      },
-      props: {},
-      children: [
-        {
-          id: nanoid(),
-          type: "Column",
-          style: { display: "block" },
-          props: {},
-          children: [],
-        },
-      ],
-    }),
+    defaultNode(): Node {
+      return {
+        id: nanoid(),
+        type: "Section",
+        props: {},
+        style: { padding: "32px 0" },
+        children: [],
+      };
+    },
   };
-
   registerWidget(widget);
 }

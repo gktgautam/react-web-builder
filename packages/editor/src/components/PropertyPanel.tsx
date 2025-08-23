@@ -6,20 +6,16 @@ import { useEditorStore } from "../store/createEditorStore";
 import { FieldControl } from "./FieldControl";
 import { getWidget } from "../widgets/registry";
 
-/** Safe traversal: cope with missing root or malformed children. */
+/** Safe traversal to find a node by id. */
 function getNode(root: Node | null | undefined, id: string | null | undefined): Node | null {
   if (!root || !id) return null;
   const stack: Node[] = [root];
-
   while (stack.length) {
     const cur = stack.pop();
-    if (!cur) continue; // defensive
+    if (!cur) continue;
     if (cur.id === id) return cur;
-    const kids = Array.isArray(cur.children) ? (cur.children as (Node | undefined)[]) : [];
-    for (let i = 0; i < kids.length; i++) {
-      const k = kids[i];
-      if (k) stack.push(k);
-    }
+    const kids = cur.children ?? [];
+    for (let i = kids.length - 1; i >= 0; i--) stack.push(kids[i]!);
   }
   return null;
 }
@@ -28,12 +24,7 @@ function StyleControls({ node }: { node: Node }) {
   const update = useEditorStore((s) => s.updateByPath);
   const id = node.id;
 
-  const make = (
-    label: string,
-    path: string,
-    placeholder?: string,
-    type: "text" | "color" = "text"
-  ) => (
+  const make = (label: string, path: string, placeholder?: string, type: "text" | "color" = "text") => (
     <label key={path} style={{ display: "block", marginBottom: 8 }}>
       <div style={{ fontSize: 12, marginBottom: 4 }}>{label}</div>
       <input
@@ -79,17 +70,20 @@ function AdvancedControls({ node }: { node: Node }) {
         <div style={{ fontSize: 12, marginBottom: 4 }}>HTML id</div>
         <input
           type="text"
-          value={node.props?._id ?? ""}
-          onChange={(e) => update(id, "props._id", e.target.value)}
+          value={(node as any).props?.id ?? ""}
+          onChange={(e) => update(id, "props.id", e.target.value)}
+          placeholder="e.g. hero-section"
           style={{ width: "100%", padding: 8 }}
         />
       </label>
+
       <label style={{ display: "block", marginBottom: 8 }}>
         <div style={{ fontSize: 12, marginBottom: 4 }}>CSS class</div>
         <input
           type="text"
-          value={node.props?._className ?? ""}
-          onChange={(e) => update(id, "props._className", e.target.value)}
+          value={(node as any).props?.className ?? ""}
+          onChange={(e) => update(id, "props.className", e.target.value)}
+          placeholder="space-separated classes"
           style={{ width: "100%", padding: 8 }}
         />
       </label>
@@ -101,16 +95,14 @@ function AdvancedControls({ node }: { node: Node }) {
 }
 
 export function PropertyPanel() {
-  // 🔁 If your store uses `doc.tree`, replace `.page` with `.doc.tree`
   const root = useEditorStore((s) => s.page);
   const selectedId = useEditorStore((s) => s.selectedId);
   const node = getNode(root, selectedId);
 
   if (!selectedId || !node) {
-    return  <>{!selectedId?'Select an element to edit its properties.':'The selected element no longer exists.'}</>;
+    return <div style={{ color: "#6b7280", fontSize: 13 }}>{!selectedId ? "Select an element to edit its properties." : "The selected element no longer exists."}</div>;
   }
 
- 
   const widget = getWidget(node.type);
 
   return (
